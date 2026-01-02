@@ -14,10 +14,14 @@ export async function GET(request: NextRequest) {
     const { db } = await connectToDatabase();
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year');
+    const project = searchParams.get('project'); // New
 
-    const query: { year?: number, userId?: string } = { userId: session.user.id };
+    const query: { year?: number, userId?: string, project?: string } = { userId: session.user.id };
     if (year) {
       query.year = parseInt(year);
+    }
+    if (project) { // New
+      query.project = project; // New
     }
 
     const tasks = await db

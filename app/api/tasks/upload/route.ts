@@ -12,19 +12,34 @@ export async function POST(request: NextRequest) {
 
     try {
         const { db } = await connectToDatabase();
+        const { searchParams } = new URL(request.url);
+        const project = searchParams.get('project');
+
+        if (!project) {
+            return NextResponse.json({ error: 'Project name is required.' }, { status: 400 });
+        }
+        
         const tasks: Task[] = await request.json(); // Get JSON directly from body
 
         if (!Array.isArray(tasks)) {
             return NextResponse.json({ error: 'Invalid JSON format. Expected an array of tasks.' }, { status: 400 });
         }
 
-        const tasksWithUserId = tasks.map(task => ({
+        const lastTask = await db.collection('tasks').findOne(
+            { project, userId: session.user.id },
+            { sort: { order_index: -1 } }
+        );
+        const highestOrderIndex = lastTask?.order_index || 0;
+
+        const tasksWithProjectAndOrder = tasks.map((task, index) => ({
             ...task,
             _id: undefined, // Ensure MongoDB generates a new _id
-            userId: session.user.id
+            userId: session.user.id,
+            project: project,
+            order_index: highestOrderIndex + index + 1,
         }));
 
-        await db.collection('tasks').insertMany(tasksWithUserId);
+        await db.collection('tasks').insertMany(tasksWithProjectAndOrder);
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

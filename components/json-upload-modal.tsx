@@ -11,25 +11,21 @@ import { Portal } from "./Portal";
 const EXAMPLE_JSON = `[
   {
     "task_title": "Design the new landing page",
-    "task_description": "Create wireframes, mockups, and prototypes for the new landing page, focusing on user experience and conversion.",
+    "task_description": "Create wireframes, mockups, and prototypes for the new landing page.",
     "start": "2026-01-10",
     "end": "2026-01-20",
     "status": "in_progress",
     "month": "January",
-    "year": 2026,
-    "project": "CYCLECTL",
-    "order_index": 1
+    "year": 2026
   },
   {
     "task_title": "Develop the new API",
-    "task_description": "Implement the backend API endpoints for user authentication, task management, and data storage.",
+    "task_description": "Implement the backend API endpoints for user authentication and task management.",
     "start": "2026-01-15",
     "end": "2026-02-10",
     "status": "pending",
     "month": "January",
-    "year": 2026,
-    "project": "CYCLECTL",
-    "order_index": 2
+    "year": 2026
   }
 ]`;
 
@@ -37,9 +33,10 @@ interface JsonUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadSuccess: () => void;
+  projectName: string;
 }
 
-export function JsonUploadModal({ isOpen, onClose, onUploadSuccess }: JsonUploadModalProps) {
+export function JsonUploadModal({ isOpen, onClose, onUploadSuccess, projectName }: JsonUploadModalProps) {
   const [jsonInput, setJsonInput] = useState(EXAMPLE_JSON);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +51,7 @@ export function JsonUploadModal({ isOpen, onClose, onUploadSuccess }: JsonUpload
     try {
       const parsedJson = JSON.parse(jsonInput);
 
-      const response = await fetch("/api/tasks/upload", {
+      const response = await fetch(`/api/tasks/upload?project=${projectName}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsedJson),

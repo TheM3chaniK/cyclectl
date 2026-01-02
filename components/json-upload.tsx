@@ -6,9 +6,10 @@ import { JsonUploadModal } from './json-upload-modal'; // New import
 
 interface JsonUploadProps {
   onUploadSuccess: () => void;
+  projectName: string;
 }
 
-export function JsonUpload({ onUploadSuccess }: JsonUploadProps) {
+export function JsonUpload({ onUploadSuccess, projectName }: JsonUploadProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -18,6 +19,7 @@ export function JsonUpload({ onUploadSuccess }: JsonUploadProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUploadSuccess={onUploadSuccess}
+        projectName={projectName}
       />
     </>
   );
