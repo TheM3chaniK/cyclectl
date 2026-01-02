@@ -17,7 +17,7 @@ const EXAMPLE_JSON = `[
     "status": "in_progress",
     "month": "January",
     "year": 2026,
-    "project": "SHIPCTRL",
+    "project": "CYCLECTL",
     "order_index": 1
   },
   {
@@ -28,7 +28,7 @@ const EXAMPLE_JSON = `[
     "status": "pending",
     "month": "January",
     "year": 2026,
-    "project": "SHIPCTRL",
+    "project": "CYCLECTL",
     "order_index": 2
   }
 ]`;

@@ -262,7 +262,7 @@ export default function Dashboard() {
           >
             <Rocket className="w-12 h-12 text-cyan-400" />
           </motion.div>
-          <p className="text-cyan-400 font-mono text-sm">LOADING SHIPCTRL...</p>
+          <p className="text-cyan-400 font-mono text-sm">LOADING CYCLECTL...</p>
         </div>
       </div>
     );
@@ -279,7 +279,7 @@ export default function Dashboard() {
             <Rocket className="w-16 h-16 text-cyan-400" />
           </motion.div>
           <h1 className="text-4xl font-bold font-mono text-cyan-400 tracking-wider">
-            SHIPCTRL
+            CYCLECTL
           </h1>
           <p className="text-lg font-mono text-cyan-500/60">
             The system that exists only to ship.
@@ -317,7 +317,7 @@ export default function Dashboard() {
                     </motion.div>
                     <div>
                       <h1 className="text-3xl font-bold font-mono text-cyan-400 tracking-wider">
-                        SHIPCTRL
+                        CYCLECTL
                       </h1>
                       <p className="text-sm font-mono text-cyan-500/60">
                         The system that exists only to ship.

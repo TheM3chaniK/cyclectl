@@ -7,7 +7,7 @@
     "status": "in_progress",
     "month": "January",
     "year": 2026,
-    "project": "SHIPCTRL",
+    "project": "CYCLECTL",
     "order_index": 1
   },
   {
@@ -18,7 +18,7 @@
     "status": "pending",
     "month": "January",
     "year": 2026,
-    "project": "SHIPCTRL",
+    "project": "CYCLECTL",
     "order_index": 2
   }
 ]

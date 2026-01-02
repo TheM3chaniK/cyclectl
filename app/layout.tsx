@@ -12,7 +12,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SHIPCTRL — The system that exists only to ship',
+  title: 'CYCLECTL — The system that exists only to ship',
   description: 'A dark, cyber-studio command center for managing long-term production roadmaps.',
   openGraph: {
     images: [

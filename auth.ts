@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
       if (!user?.email) return false
 
       const client = await clientPromise
-      const db = client.db("shipctl")
+      const db = client.db("cyclectl")
 
       await db.collection("users").updateOne(
         { email: user.email },

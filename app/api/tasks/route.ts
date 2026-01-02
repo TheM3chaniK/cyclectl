@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       year: year ? parseInt(year) : new Date().getFullYear(),
-      project: 'SHIPCTRL',
+      project: 'CYCLECTL',
       schedule: Object.keys(grouped).map(month => ({
         month,
         tasks: grouped[month]
