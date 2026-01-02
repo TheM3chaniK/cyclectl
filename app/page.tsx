@@ -208,7 +208,7 @@ export default function Dashboard() {
   };
 
   const handleToggleComplete = async (task: Task) => { // New function
-    const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+    const newStatus: Task['status'] = task.status === 'completed' ? 'pending' : 'completed';
     const updatedTask = { ...task, status: newStatus };
     await handleUpdateTask(updatedTask);
   };
