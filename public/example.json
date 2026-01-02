@@ -1,0 +1,24 @@
+[
+  {
+    "task_title": "Design the new landing page",
+    "task_description": "Create wireframes, mockups, and prototypes for the new landing page, focusing on user experience and conversion.",
+    "start": "2026-01-10",
+    "end": "2026-01-20",
+    "status": "in_progress",
+    "month": "January",
+    "year": 2026,
+    "project": "SHIPCTRL",
+    "order_index": 1
+  },
+  {
+    "task_title": "Develop the new API",
+    "task_description": "Implement the backend API endpoints for user authentication, task management, and data storage.",
+    "start": "2026-01-15",
+    "end": "2026-02-10",
+    "status": "pending",
+    "month": "January",
+    "year": 2026,
+    "project": "SHIPCTRL",
+    "order_index": 2
+  }
+]
