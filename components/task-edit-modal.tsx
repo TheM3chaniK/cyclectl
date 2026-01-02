@@ -119,12 +119,13 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                 </label>
                 <select
                   value={formData.status || 'pending'}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Task['status'] })}
                   className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
                 >
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
+                  <option value="overdue">Overdue</option>
                 </select>
               </div>
 

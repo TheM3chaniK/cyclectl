@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Rocket } from 'lucide-react';
+import { Task } from '@/lib/database.types';
 
 interface AddTaskButtonProps {
   onAdd: (task: {
@@ -12,7 +13,7 @@ interface AddTaskButtonProps {
     end: string;
     month: string;
     year: number;
-    status: string;
+    status: Task['status'];
   }) => void;
 }
 
@@ -30,7 +31,7 @@ export function AddTaskButton({ onAdd }: AddTaskButtonProps) {
     end: '',
     month: 'January',
     year: new Date().getFullYear(),
-    status: 'pending',
+    status: 'pending' as Task['status'],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,7 +44,7 @@ export function AddTaskButton({ onAdd }: AddTaskButtonProps) {
       end: '',
       month: 'January',
       year: new Date().getFullYear(),
-      status: 'pending',
+      status: 'pending' as Task['status'],
     });
     setIsOpen(false);
   };
@@ -168,7 +169,7 @@ export function AddTaskButton({ onAdd }: AddTaskButtonProps) {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as Task['status'] })}
                       className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
                     >
                       <option value="pending">Pending</option>

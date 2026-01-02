@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid JSON format. Expected an array of tasks.' }, { status: 400 });
         }
 
-        const tasksWithUserId = tasks.map(task => ({ ...task, userId: session.user.id }));
+        const tasksWithUserId = tasks.map(task => ({
+            ...task,
+            _id: undefined, // Ensure MongoDB generates a new _id
+            userId: session.user.id
+        }));
 
         await db.collection('tasks').insertMany(tasksWithUserId);
 

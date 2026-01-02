@@ -117,7 +117,7 @@ export default function MonthPage() {
               <div className="space-y-4">
                 {tasks.map((task, index) => (
                   <motion.div
-                    key={task.id}
+                    key={task._id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -134,7 +134,7 @@ export default function MonthPage() {
                         <div>
                           <div className="flex items-center gap-3 mb-2">
                             <span className="text-xs font-mono px-2 py-1 rounded-full bg-black/50 text-cyan-400 border border-cyan-500/30">
-                              {task.task_id}
+                              {task.task_title}
                             </span>
                             <span className={`text-xs font-mono px-2 py-1 rounded-full ${
                               task.status === 'completed'
@@ -147,7 +147,7 @@ export default function MonthPage() {
                             </span>
                           </div>
                           <h3 className="text-lg font-mono text-white/90 mb-3">
-                            {task.task}
+                            {task.task_description}
                           </h3>
                         </div>
 
