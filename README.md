@@ -101,6 +101,9 @@ After signing in, you'll see a list of your projects. You can create a new proje
 -   **Export JSON:** Click "Export JSON" to download all tasks for the current project as a JSON file.
 -   **Clear Board:** Click the "Clear Board" button (trash icon) to delete all tasks in the current project.
 
+### LICENSE
+![License: MIT + Commons Clause](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-red.svg)
+
 ### 💀 M3K Signing Off
 
 Questions, collabs or weird binaries: **contact@them3chanik.com**
