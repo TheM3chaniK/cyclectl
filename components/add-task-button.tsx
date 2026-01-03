@@ -57,7 +57,7 @@ export function AddTaskButton({ onAdd }: AddTaskButtonProps) {
     const start = `${formData.year}-${String(monthIndex + 1).padStart(2, '0')}-${String(formData.startDay).padStart(2, '0')}`;
     const end = `${formData.year}-${String(monthIndex + 1).padStart(2, '0')}-${String(formData.endDay).padStart(2, '0')}`;
 
-    onAdd({ ...formData, start, end, startDay: Number(formData.startDay), endDay: Number(formData.endDay) });
+    onAdd({ ...formData, start, end });
     setFormData({
       task_title: '',
       task_description: '',
