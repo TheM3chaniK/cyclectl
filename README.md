@@ -4,149 +4,107 @@
 
 A dark, cyber-studio command center for managing long-term production roadmaps, now powered by Next.js, NextAuth.js, and MongoDB.
 
+**Live Demo:** [cyclectl.them3chanik.com](https://cyclectl.them3chanik.com)
+
+## Overview
+
+CYCLECTL is a powerful web application designed to help teams manage their long-term production roadmaps efficiently. It provides a collaborative environment where team members can view, create, edit, and track tasks within shared projects, all governed by a robust role-based permission system.
+
 ## Features
 
-- **Kanban-style Board** - Organize tasks by month with drag-and-drop
-- **Drag & Drop** - Move cards between months seamlessly
-- **Floating Trash Bin** - Drag cards to delete with undo support
-- **Task Management** - Create, edit, and track task progress
-- **Progress Tracking** - Visual progress bars per month
-- **Auto-Status Updates** - Tasks automatically move to 'in-progress' or 'overdue' based on current date
-- **Authentication** - Sign in with GitHub, Google, or a magic link sent to your email
-- **JSON Import** - Load tasks in bulk by pasting JSON data
-- **Animated Favicon** - A live animated rocket favicon
-- **Dark Glassmorphism UI** - Cyberpunk-inspired design with neon cyan accents
+- **Collaborative Project Management:** Work with your team on shared projects with granular access controls.
+- **Role-Based Permissions:** Define roles (Owner, Editor, Viewer) to control who can perform actions within a project.
+  - **Owner:** Full control (create, edit, delete, move, reorder, change status, import/export JSON, manage team).
+  - **Editor:** Can create, edit, reorder, and change task status.
+  - **Viewer:** Can only view tasks and project details.
+- **Kanban-style Board:** Organize tasks by month with drag-and-drop functionality.
+- **Task Management:** Create, edit, and track task progress with simplified day-only date inputs.
+- **Floating Trash Bin:** Drag tasks to the trash bin (appears when dragging) to delete (owner only).
+- **Progress Tracking:** Visual progress bars per month.
+- **Auto-Status Updates:** Tasks automatically move to 'in-progress' or 'overdue' based on current date.
+- **Authentication:** Secure sign-in with GitHub, Google, or a magic link sent to your email.
+- **JSON Import/Export:** Load tasks in bulk by pasting JSON data or export existing tasks as a JSON file (owner only).
+- **Dark Glassmorphism UI:** Cyberpunk-inspired design with neon cyan accents.
 
 ## Tech Stack
 
-### Frontend
-- Next.js 16 (App Router)
-- TypeScript
-- TailwindCSS
-- Framer Motion
-- @dnd-kit/core
+- **Frontend:** Next.js 14 (App Router), TypeScript, React, TailwindCSS, Framer Motion, @dnd-kit/core.
+- **Backend:** Node.js, Next.js API Routes, NextAuth.js (JWT Sessions), MongoDB.
+- **Authentication:** NextAuth.js with GitHub, Google, and Email providers.
 
-### Backend
-- MongoDB
-- Next.js API Routes
-- NextAuth.js (JWT Sessions)
+## Installation (Local Environment)
 
-## Installation
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/them3chanik/cyclectl.git
+    cd cyclectl
+    ```
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd cyclectl
-```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-2. **Install dependencies**
-```bash
-npm install
-```
+3.  **Set up environment variables:**
+    ```bash
+    cp .env.example .env
+    ```
+    Add your credentials to `.env`:
+    ```
+    # MongoDB
+    MONGODB_URI=your_mongodb_connection_string
+    MONGODB_DB=cyclectl
 
-3. **Set up environment variables**
-```bash
-cp .env.example .env
-```
+    # NextAuth.js
+    NEXTAUTH_URL=http://localhost:3000
+    NEXTAUTH_SECRET=a_secure_random_string_for_session_encryption
 
-Add your credentials to `.env`:
-```
-# MongoDB
-MONGODB_URI=your_mongodb_connection_string
-MONGODB_DB=cyclectl
+    # OAuth Providers (Optional, uncomment and fill if needed)
+    # GITHUB_ID=your_github_oauth_app_id
+    # GITHUB_SECRET=your_github_oauth_app_secret
+    # GOOGLE_CLIENT_ID=your_google_oauth_client_id
+    # GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+    # EMAIL_SERVER_USER=your_email_user
+    # EMAIL_SERVER_PASSWORD=your_email_password
+    # EMAIL_SERVER_HOST=your_email_host
+    # EMAIL_SERVER_PORT=your_email_port
+    # EMAIL_FROM=your_email_from
+    ```
 
-# NextAuth.js
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=a_secure_random_string_for_session_encryption
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
-# OAuth Providers
-GITHUB_ID=your_github_oauth_app_id
-GITHUB_SECRET=your_github_oauth_app_secret
-GOOGLE_CLIENT_ID=your_google_oauth_client_id
-GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
-
-```
-
-4. **Run the development server**
-```bash
-npm run dev
-```
-
-5. **Open in browser**
-Navigate to [http://localhost:3000](http://localhost:3000)
+5.  **Open in browser:**
+    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## Usage
 
-### Creating Tasks
-Click the "NEW TASK" button in the bottom-left corner to create a new task.
+### Projects
+After signing in, you'll see a list of your projects. You can create a new project or select an existing one.
 
-### Drag & Drop
-- Drag tasks between months to reschedule
-- Drag tasks to the trash bin (appears when dragging) to delete
+### Task Management
+-   **Creating Tasks:** Click the "NEW TASK" button to add a new task to the current month. Only Owners and Editors can create tasks.
+-   **Viewing & Editing Tasks:** Click on any task card to open a detailed view. Owners and Editors can click the edit icon to modify task details. Viewers can only view.
+-   **Simplified Date Input:** When creating or editing tasks, you'll select a month and then only enter the day of the month. The year automatically defaults to the current year.
+-   **Changing Task Status:** Owners and Editors can toggle task completion status directly from the task card.
 
-### Viewing & Editing Tasks
-- Click on any task card to open a detailed view.
-- From the detailed view, click the pencil icon to edit the task.
+### Team Collaboration (Owner-specific actions)
+-   **Sharing Projects:** Click the "Share" button in the project header to manage team members.
+-   **Invite Members:** Project Owners can invite new members by email and assign them roles (Editor or Viewer).
+-   **Change Roles:** Project Owners can change the roles of existing team members.
+-   **Remove Members:** Project Owners can remove members from the project.
 
-### Importing Tasks
-- Click "Load JSON" in the header to open a modal.
-- Paste your JSON data and click "Load JSON" to import tasks.
-- A "Copy Example" button is available for the correct JSON structure.
-
-### Clearing the Board
-- Click the trash icon ("Clear Board") in the header to delete all your tasks (a confirmation will be required).
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/tasks` | Get all tasks for the logged-in user |
-| POST | `/api/tasks` | Create a new task for the logged-in user |
-| PUT | `/api/tasks/:id` | Update a task |
-| DELETE | `/api/tasks/:id` | Delete a task |
-| DELETE | `/api/tasks/clear` | Delete all tasks for the logged-in user |
-| POST | `/api/tasks/upload` | Import tasks from JSON |
-| GET | `/api/auth/*` | NextAuth.js authentication routes |
-| POST | `/api/auth/*` | NextAuth.js authentication routes |
-
-## Project Structure
-
-```
-├── app/
-│   ├── api/tasks/         # API routes
-│   ├── month/[name]/      # Monthly planner page
-│   ├── page.tsx           # Dashboard
-│   └── layout.tsx         # Root layout
-├── components/
-│   ├── ui/                # Shadcn UI components
-│   ├── AddTaskButton.tsx
-│   ├── AnimatedFavicon.tsx
-│   ├── JsonUpload.tsx
-│   ├── JsonUploadModal.tsx
-│   ├── MonthColumn.tsx
-│   ├── Portal.tsx
-│   ├── TaskCard.tsx
-│   ├── TaskDetailModal.tsx
-│   ├── TaskEditModal.tsx
-│   └── TrashBin.tsx
-├── lib/
-│   ├── database.types.ts  # TypeScript types
-│   ├── mongo.ts           # MongoDB client
-│   └── mongodb.ts         # MongoDB connection helper
-├── types/
-│   ├── global.d.ts
-│   └── next-auth.d.ts     # NextAuth.js type augmentation
-├── auth.ts                # NextAuth.js configuration
-└── public/
-```
+### Data Management (Owner-specific actions)
+-   **Import JSON:** Click "Load JSON" in the header to import tasks in bulk from a JSON file.
+-   **Export JSON:** Click "Export JSON" to download all tasks for the current project as a JSON file.
+-   **Clear Board:** Click the "Clear Board" button (trash icon) to delete all tasks in the current project.
 
 ## License
 
 This project is licensed under the GNU General Public License (GPL).
----
 
 ### 💀 M3K Signing Off
 
 Questions, collabs or weird binaries: **contact@them3chanik.com**
-
-
