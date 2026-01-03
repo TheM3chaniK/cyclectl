@@ -7,11 +7,13 @@ import { cn } from '@/lib/utils';
 
 interface TrashBinProps {
   isDragging: boolean;
+  currentUserRole: 'owner' | 'editor' | 'viewer' | null;
 }
 
-export function TrashBin({ isDragging }: TrashBinProps) {
+export function TrashBin({ isDragging, currentUserRole }: TrashBinProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'trash',
+    disabled: currentUserRole !== 'owner', // Only owner can delete
   });
 
   return (

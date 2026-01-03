@@ -10,9 +10,10 @@ interface TaskDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: (task: Task) => void;
+  currentUserRole: 'owner' | 'editor' | 'viewer' | null;
 }
 
-export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailModalProps) {
+export function TaskDetailModal({ task, isOpen, onClose, onEdit, currentUserRole }: TaskDetailModalProps) {
   if (!isOpen || !task) return null;
 
   const statusColors = {
@@ -46,6 +47,7 @@ export function TaskDetailModal({ task, isOpen, onClose, onEdit }: TaskDetailMod
               <button
                 onClick={() => onEdit(task)}
                 className="p-2 rounded-lg hover:bg-cyan-500/20 transition-colors"
+                disabled={currentUserRole === 'viewer'}
               >
                 <Edit className="w-5 h-5 text-cyan-400" />
               </button>

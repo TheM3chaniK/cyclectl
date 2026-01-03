@@ -16,8 +16,8 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
-import { Rocket, Calendar, Trash } from 'lucide-react';
-import { Task } from '@/lib/database.types';
+import { Rocket, Calendar, Trash, Download } from 'lucide-react';
+import { Task, Project } from '@/lib/database.types';
 import { MonthColumn } from '@/components/month-column';
 import { TaskCard } from '@/components/task-card';
 import { TrashBin } from '@/components/trash-bin';
@@ -27,6 +27,7 @@ import { AddTaskButton } from '@/components/add-task-button';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { JsonUpload } from '@/components/json-upload';
+import { TeamManagementModal } from '@/components/team-management-modal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,12 +49,15 @@ export default function ProjectDashboard() {
   const params = useParams();
   const projectName = decodeURIComponent(params.name as string);
   const { data: session, status } = useSession();
+  const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<'owner' | 'editor' | 'viewer' | null>(null);
   
   const loading = status === 'loading';
 
@@ -65,20 +69,43 @@ export default function ProjectDashboard() {
   );
 
   useEffect(() => {
-    if (status === 'authenticated' && projectName) {
+    if (status === 'authenticated' && projectName && session?.user?.id) {
+      const fetchProject = async () => {
+        try {
+          const response = await fetch(`/api/projects?name=${encodeURIComponent(projectName)}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch project');
+          }
+          const data = await response.json();
+          setProject(data);
+          const userMember = data.team.find((member: any) => member.userId === session.user?.id);
+          if (userMember) {
+            setCurrentUserRole(userMember.role);
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error('Failed to load project.');
+        }
+      };
+      fetchProject();
+    }
+  }, [status, projectName, session?.user?.id]);
+
+  useEffect(() => {
+    if (project) {
       fetchTasks();
     }
-  }, [status, projectName]);
+  }, [project]);
 
   const fetchTasks = async () => {
-    if (!projectName) return;
+    if (!project) return;
     try {
-      const cached = localStorage.getItem(`cyclectl_tasks_${projectName}`);
+      const cached = localStorage.getItem(`cyclectl_tasks_${project._id}`);
       if (cached) {
         setTasks(JSON.parse(cached));
       }
 
-      const response = await fetch(`/api/tasks?year=${new Date().getFullYear()}&project=${projectName}`);
+      const response = await fetch(`/api/tasks?projectId=${project._id}&year=${new Date().getFullYear()}`);
       const data = await response.json();
 
       let allTasks: Task[] = data.schedule?.flatMap((s: any) => s.tasks) || [];
@@ -101,7 +128,7 @@ export default function ProjectDashboard() {
           return taskToUpdate ? taskToUpdate : task;
         });
         setTasks(updatedTasks);
-        localStorage.setItem(`cyclectl_tasks_${projectName}`, JSON.stringify(updatedTasks));
+        localStorage.setItem(`cyclectl_tasks_${project._id}`, JSON.stringify(updatedTasks));
 
         await Promise.all(tasksToUpdate.map(task => 
           fetch(`/api/tasks/${task._id}`, {
@@ -112,7 +139,7 @@ export default function ProjectDashboard() {
         ));
       } else {
         setTasks(allTasks);
-        localStorage.setItem(`cyclectl_tasks_${projectName}`, JSON.stringify(allTasks));
+        localStorage.setItem(`cyclectl_tasks_${project._id}`, JSON.stringify(allTasks));
       }
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -121,9 +148,8 @@ export default function ProjectDashboard() {
   };
 
   const handleAddTask = async (taskData: any) => {
-    console.log('handleAddTask: projectName from URL:', projectName);
-    const taskWithProject = { ...taskData, project: projectName };
-    console.log('handleAddTask: taskWithProject to be sent:', taskWithProject);
+    if (!project) return;
+    const taskWithProject = { ...taskData, projectId: project._id };
     try {
       const response = await fetch('/api/tasks', {
         method: 'POST',
@@ -135,7 +161,7 @@ export default function ProjectDashboard() {
 
       const newTask = await response.json();
       setTasks(prev => [...prev, newTask]);
-      localStorage.setItem(`cyclectl_tasks_${projectName}`, JSON.stringify([...tasks, newTask]));
+      localStorage.setItem(`cyclectl_tasks_${project._id}`, JSON.stringify([...tasks, newTask]));
       toast.success('Task created successfully');
     } catch (error) {
       console.error('Failed to add task:', error);
@@ -144,6 +170,7 @@ export default function ProjectDashboard() {
   };
 
   const handleUpdateTask = async (updatedTask: Task) => {
+    if (!project) return;
     try {
       const response = await fetch(`/api/tasks/${updatedTask._id}`, {
         method: 'PUT',
@@ -155,7 +182,7 @@ export default function ProjectDashboard() {
 
       const updated = await response.json();
       setTasks(prev => prev.map(t => t._id === updated._id ? updated : t));
-      localStorage.setItem(`cyclectl_tasks_${projectName}`, JSON.stringify(tasks.map(t => t._id === updated._id ? updated : t)));
+      localStorage.setItem(`cyclectl_tasks_${project._id}`, JSON.stringify(tasks.map(t => t._id === updated._id ? updated : t)));
       setIsEditModalOpen(false);
       setEditingTask(null);
       setIsDetailModalOpen(false);
@@ -167,6 +194,7 @@ export default function ProjectDashboard() {
   };
 
   const handleDeleteTask = async (taskId: string) => {
+    if (!project) return;
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'DELETE',
@@ -176,7 +204,7 @@ export default function ProjectDashboard() {
 
       const { deleted } = await response.json();
       setTasks(prev => prev.filter(t => t._id !== taskId));
-      localStorage.setItem(`cyclectl_tasks_${projectName}`, JSON.stringify(tasks.filter(t => t._id !== taskId)));
+      localStorage.setItem(`cyclectl_tasks_${project._id}`, JSON.stringify(tasks.filter(t => t._id !== taskId)));
 
       toast.success('Task deleted', {
         action: {
@@ -193,25 +221,53 @@ export default function ProjectDashboard() {
   };
 
   const handleClearBoard = async () => {
+    if (!project) return;
     try {
       const response = await fetch('/api/tasks/clear', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ projectName }),
+        body: JSON.stringify({ projectId: project._id }),
       });
 
       if (!response.ok) throw new Error('Failed to clear board');
 
       toast.success('Board cleared successfully');
       setTasks([]);
-      localStorage.removeItem(`cyclectl_tasks_${projectName}`);
+      localStorage.removeItem(`cyclectl_tasks_${project._id}`);
     } catch (error) {
       console.error('Failed to clear board:', error);
       toast.error('Failed to clear board');
     }
   };
+
+  const handleExportJson = () => {
+    if (!project || tasks.length === 0) {
+      toast.info('No tasks to export or project not loaded.');
+      return;
+    }
+
+    // Filter out internal fields like _id, userId, projectId, order_index, created_at, updated_at
+    const exportableTasks = tasks.map(({ _id, userId, projectId, order_index, created_at, updated_at, ...rest }) => ({
+      ...rest,
+      start: new Date(rest.start).getUTCDate(), // Convert full date string back to day number
+      end: new Date(rest.end).getUTCDate(), // Convert full date string back to day number
+    }));
+
+    const jsonString = JSON.stringify(exportableTasks, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${project.name}_tasks_${new Date().getFullYear()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('Tasks exported successfully!');
+  };
+
 
   const handleToggleComplete = async (task: Task) => {
     const newStatus: Task['status'] = task.status === 'completed' ? 'pending' : 'completed';
@@ -223,6 +279,7 @@ export default function ProjectDashboard() {
     const task = tasks.find(t => t._id === event.active.id);
     setActiveTask(task || null);
   };
+
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -274,6 +331,14 @@ export default function ProjectDashboard() {
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      // Disable drag and drop for tasks if currentUserRole is not 'owner' (Permissions 4 & 6)
+      // Permission 4: move tasks between months (only owner)
+      // Permission 6: reorder tasks within a month (owner and editor)
+      // The DndContext itself is not directly disabled here, but individual drag operations
+      // are controlled by `canDrag` in TaskCard and checks in `handleDragEnd`.
+      // The `useSortable` hook in TaskCard already disables reordering for 'viewer'.
+      // For moving tasks between months (Permission 4), a check will be added in handleDragEnd.
+      // So, DndContext itself does not need to be disabled based on role here.
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="relative">
@@ -295,22 +360,27 @@ export default function ProjectDashboard() {
                         {projectName ? projectName.toUpperCase() : 'CYCLECTL'}
                       </h1>
                       <p className="text-sm font-mono text-cyan-500/60">
-                        The system that exists only to ship.
+                        Control the cycle. Ship the outcome.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <JsonUpload onUploadSuccess={fetchTasks} projectName={projectName} />
+                    <JsonUpload onUploadSuccess={fetchTasks} projectId={project?._id} disabled={currentUserRole !== 'owner'} />
+                    <Button onClick={handleExportJson} disabled={!project || tasks.length === 0 || currentUserRole !== 'owner'}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export JSON
+                    </Button>
                     <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/30 border border-cyan-500/30">
-                      <Calendar className="w-4 h-4 text-cyan-400" />
+                      <Calendar className="w-4 h-4 mr-2 text-cyan-400" />
                       <span className="text-sm font-mono text-cyan-400">
                         {new Date().getFullYear()}
                       </span>
                     </div>
+                    <Button onClick={() => setIsTeamModalOpen(true)} disabled={!project}>Share</Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive">
+                        <Button variant="destructive" disabled={currentUserRole !== 'owner'}>
                           <Trash className="w-4 h-4 mr-2" />
                           Clear Board
                         </Button>
@@ -329,6 +399,9 @@ export default function ProjectDashboard() {
                       </AlertDialogContent>
                     </AlertDialog>
                     <Button onClick={() => signOut({ callbackUrl: '/' })}>Sign out</Button>
+                    {session?.user?.email && (
+                      <span className="text-sm font-mono text-cyan-400/80">{session.user.email}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -344,6 +417,7 @@ export default function ProjectDashboard() {
                     onEditTask={handleEditTask}
                     onViewDetails={handleViewTask}
                     onToggleComplete={handleToggleComplete}
+                    currentUserRole={currentUserRole}
                   />
                 ))}
               </div>
@@ -351,13 +425,13 @@ export default function ProjectDashboard() {
           </div>
         </div>
 
-        <TrashBin isDragging={!!activeTask} />
-        <AddTaskButton onAdd={handleAddTask} />
+        <TrashBin isDragging={!!activeTask} currentUserRole={currentUserRole} />
+        <AddTaskButton onAdd={handleAddTask} disabled={currentUserRole === 'viewer'} />
 
         <DragOverlay>
           {activeTask && (
             <div className="opacity-80">
-              <TaskCard task={activeTask} onEdit={() => {}} onViewDetails={() => {}} onToggleComplete={() => {}} />
+              <TaskCard task={activeTask} onEdit={() => {}} onViewDetails={() => {}} onToggleComplete={() => {}} currentUserRole={currentUserRole} />
             </div>
           )}
         </DragOverlay>
@@ -370,6 +444,7 @@ export default function ProjectDashboard() {
             setEditingTask(null);
           }}
           onSave={handleUpdateTask}
+          currentUserRole={currentUserRole}
         />
         <TaskDetailModal
           task={viewingTask}
@@ -379,6 +454,12 @@ export default function ProjectDashboard() {
             setViewingTask(null);
           }}
           onEdit={handleEditTask}
+          currentUserRole={currentUserRole}
+        />
+        <TeamManagementModal
+          isOpen={isTeamModalOpen}
+          onClose={() => setIsTeamModalOpen(false)}
+          project={project}
         />
       </div>
     </DndContext>

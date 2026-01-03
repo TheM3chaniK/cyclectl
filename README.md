@@ -1,6 +1,6 @@
 # CYCLECTL
 
-> The system that exists only to ship.
+> Control the cycle. Ship the outcome.
 
 A dark, cyber-studio command center for managing long-term production roadmaps, now powered by Next.js, NextAuth.js, and MongoDB.
 

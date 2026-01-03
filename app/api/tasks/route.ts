@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Task } from '@/lib/database.types';
+import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -14,14 +15,25 @@ export async function GET(request: NextRequest) {
     const { db } = await connectToDatabase();
     const { searchParams } = new URL(request.url);
     const year = searchParams.get('year');
-    const project = searchParams.get('project'); // New
+    const projectId = searchParams.get('projectId');
 
-    const query: { year?: number, userId?: string, project?: string } = { userId: session.user.id };
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
+    }
+
+    const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+    if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const isUserInTeam = project.team.some((member: any) => member.userId.toString() === session.user.id);
+    if (!isUserInTeam) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const query: { year?: number, projectId?: string } = { projectId };
     if (year) {
       query.year = parseInt(year);
-    }
-    if (project) { // New
-      query.project = project; // New
     }
 
     const tasks = await db
@@ -40,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       year: year ? parseInt(year) : new Date().getFullYear(),
-      project: 'CYCLECTL',
+      project: 'CYCLECTL', // This might need to be updated later
       schedule: Object.keys(grouped).map(month => ({
         month,
         tasks: grouped[month]
@@ -60,6 +72,16 @@ export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const body = await request.json();
+
+    const project = await db.collection('projects').findOne({ _id: new ObjectId(body.projectId) });
+    if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const teamMember = project.team.find((member: any) => member.userId.toString() === session.user.id);
+    if (!teamMember || !['owner', 'editor'].includes(teamMember.role)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { insertedId } = await db.collection('tasks').insertOne({ ...body, userId: session.user.id });
 

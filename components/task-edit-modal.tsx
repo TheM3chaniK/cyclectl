@@ -15,9 +15,10 @@ interface TaskEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Task) => void;
+  currentUserRole: 'owner' | 'editor' | 'viewer' | null;
 }
 
-export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalProps) {
+export function TaskEditModal({ task, isOpen, onClose, onSave, currentUserRole }: TaskEditModalProps) {
   const [formData, setFormData] = useState<Partial<Task>>({});
   const [startDay, setStartDay] = useState<number | string>(1);
   const [endDay, setEndDay] = useState<number | string>(1);
@@ -55,6 +56,10 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentUserRole === 'viewer') {
+      toast.error('Viewers cannot edit tasks.');
+      return;
+    }
     if (formData._id) {
       const monthIndex = MONTHS.indexOf(formData.month!);
       const year = formData.year || new Date().getFullYear();
@@ -106,6 +111,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                   onChange={(e) => setFormData({ ...formData, task_title: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
                   required
+                  disabled={currentUserRole === 'viewer'}
                 />
               </div>
 
@@ -119,6 +125,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                   rows={3}
                   className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none"
                   required
+                  disabled={currentUserRole === 'viewer'}
                 />
               </div>
 
@@ -131,6 +138,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                     value={formData.month}
                     onChange={(e) => setFormData({ ...formData, month: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                    disabled={currentUserRole === 'viewer'}
                   >
                     {MONTHS.map(month => (
                       <option key={month} value={month}>{month}</option>
@@ -149,6 +157,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                     required
                     min="1"
                     max={formData.month && formData.year ? new Date(formData.year, MONTHS.indexOf(formData.month) + 1, 0).getDate() : 31}
+                    disabled={currentUserRole === 'viewer'}
                   />
                 </div>
 
@@ -164,6 +173,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                     required
                     min="1"
                     max={formData.month && formData.year ? new Date(formData.year, MONTHS.indexOf(formData.month) + 1, 0).getDate() : 31}
+                    disabled={currentUserRole === 'viewer'}
                   />
                 </div>
               </div>
@@ -176,6 +186,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                   value={formData.status || 'pending'}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Task['status'] })}
                   className="w-full px-4 py-2 rounded-lg bg-black/50 border border-cyan-500/30 text-white font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                  disabled={currentUserRole === 'viewer'}
                 >
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
@@ -188,6 +199,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave }: TaskEditModalPr
                 <button
                   type="submit"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 text-white font-mono text-sm font-bold hover:from-cyan-500 hover:to-cyan-400 transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
+                  disabled={currentUserRole === 'viewer'}
                 >
                   <Save className="w-4 h-4" />
                   SAVE CHANGES

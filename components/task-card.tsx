@@ -11,10 +11,11 @@ interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
   onViewDetails: (task: Task) => void;
-  onToggleComplete: (task: Task) => void; // New Prop
+  onToggleComplete: (task: Task) => void;
+  currentUserRole: 'owner' | 'editor' | 'viewer' | null;
 }
 
-export function TaskCard({ task, onEdit, onViewDetails, onToggleComplete }: TaskCardProps) {
+export function TaskCard({ task, onEdit, onViewDetails, onToggleComplete, currentUserRole }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -22,7 +23,7 @@ export function TaskCard({ task, onEdit, onViewDetails, onToggleComplete }: Task
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task._id });
+  } = useSortable({ id: task._id, disabled: currentUserRole === 'viewer' });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -55,7 +56,7 @@ export function TaskCard({ task, onEdit, onViewDetails, onToggleComplete }: Task
     >
       <div
         {...listeners}
-        className="absolute top-1/2 -left-3 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        className={cn("absolute top-1/2 -left-3 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 transition-opacity", currentUserRole === 'viewer' ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing')}
       >
         <GripVertical className="w-4 h-4 text-cyan-400/50" />
       </div>
@@ -70,6 +71,7 @@ export function TaskCard({ task, onEdit, onViewDetails, onToggleComplete }: Task
           }}
           className="absolute top-2 right-2 p-1 rounded-lg hover:bg-cyan-500/20 transition-colors z-10"
           title="Toggle Completion"
+          disabled={currentUserRole === 'viewer'}
         >
           {task.status === 'completed' ? (
             <CheckCircle className="w-5 h-5 text-green-400" />

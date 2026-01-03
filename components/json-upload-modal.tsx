@@ -42,10 +42,10 @@ interface JsonUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadSuccess: () => void;
-  projectName: string;
+  projectId: string | undefined;
 }
 
-export function JsonUploadModal({ isOpen, onClose, onUploadSuccess, projectName }: JsonUploadModalProps) {
+export function JsonUploadModal({ isOpen, onClose, onUploadSuccess, projectId }: JsonUploadModalProps) {
   const [jsonInput, setJsonInput] = useState(EXAMPLE_JSON);
   const [loading, setLoading] = useState(false);
 
@@ -60,7 +60,7 @@ export function JsonUploadModal({ isOpen, onClose, onUploadSuccess, projectName 
     try {
       const parsedJson = JSON.parse(jsonInput);
 
-      const response = await fetch(`/api/tasks/upload?project=${projectName}`, {
+      const response = await fetch(`/api/tasks/upload?projectId=${projectId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsedJson),

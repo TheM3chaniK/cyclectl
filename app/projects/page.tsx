@@ -7,11 +7,12 @@ import { Rocket, Plus, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSession, signOut } from 'next-auth/react'; // Added useSession and signOut
+import { Project } from '@/lib/database.types';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { data: session, status } = useSession(); // Get session status
-  const [projects, setProjects] = useState<string[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [newProjectName, setNewProjectName] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -46,10 +47,23 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleCreateProject = (e: React.FormEvent) => {
+  const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newProjectName.trim()) {
-      router.push(`/project/${encodeURIComponent(newProjectName.trim())}`);
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newProjectName.trim() }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to create project');
+        }
+        const newProject = await response.json();
+        router.push(`/project/${encodeURIComponent(newProject.name)}`);
+      } catch (error) {
+        console.error('Failed to create project:', error);
+      }
     }
   };
 
@@ -90,7 +104,10 @@ export default function ProjectsPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => signOut({ callbackUrl: '/' })}>Sign out</Button> {/* Sign out button */}
+          <Button onClick={() => signOut({ callbackUrl: '/' })}>Sign out</Button>
+          {session?.user?.email && (
+            <span className="text-sm font-mono text-cyan-400/80">{session.user.email}</span>
+          )}
         </div>
 
         <div className="mb-12">
@@ -118,7 +135,7 @@ export default function ProjectsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {projects.map((project, index) => (
                 <motion.div
-                  key={project}
+                  key={project._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -126,10 +143,10 @@ export default function ProjectsPage() {
                   <Button
                     variant="outline"
                     className="w-full h-32 flex flex-col items-center justify-center gap-2 border-cyan-500/20 bg-slate-900/50 hover:bg-slate-800/50 hover:border-cyan-500/40"
-                    onClick={() => router.push(`/project/${encodeURIComponent(project)}`)}
+                    onClick={() => router.push(`/project/${encodeURIComponent(project.name)}`)}
                   >
                     <Folder className="w-8 h-8 text-cyan-400" />
-                    <span className="font-mono text-lg">{project}</span>
+                    <span className="font-mono text-lg">{project.name}</span>
                   </Button>
                 </motion.div>
               ))}

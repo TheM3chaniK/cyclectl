@@ -50,7 +50,8 @@ export default function HomePage() {
             CYCLECTL
           </h1>
           <p className="text-lg font-mono text-cyan-500/60">
-            The system that exists only to ship.
+            Control the cycle. Ship the outcome.
+
           </p>
           <div className="flex gap-4 mt-8">
             <Button onClick={() => signIn("github")}>

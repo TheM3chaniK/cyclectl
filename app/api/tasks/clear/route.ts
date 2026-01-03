@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { connectToDatabase } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -12,15 +13,25 @@ export async function DELETE(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
 
-    const { projectName } = await request.json();
+    const { projectId } = await request.json();
 
-    if (!projectName) {
-      return NextResponse.json({ error: 'Project name is required' }, { status: 400 });
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
+    }
+
+    const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+    if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const teamMember = project.team.find((member: any) => member.userId.toString() === session.user.id);
+    if (!teamMember || teamMember.role !== 'owner') { // Changed to 'owner' only
+        return NextResponse.json({ error: 'Only the project owner can clear tasks' }, { status: 403 });
     }
 
     const { deletedCount } = await db.collection('tasks').deleteMany({ 
       userId: session.user.id,
-      project: projectName 
+      projectId: projectId
     });
 
     return NextResponse.json({ message: `Deleted ${deletedCount} tasks for user ${session.user.id}` });

@@ -12,8 +12,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CYCLECTL — The system that exists only to ship',
-  description: 'A dark, cyber-studio command center for managing long-term production roadmaps.',
+  title: 'CYCLECTL — Control the cycle. Ship the outcome.',
+  description: 'A command system for your year — where months become missions and goals become shipped work.',
 };
 
 export default function RootLayout({

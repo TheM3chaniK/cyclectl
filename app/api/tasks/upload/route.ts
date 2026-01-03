@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { connectToDatabase } from '@/lib/mongodb';
 import { Task } from '@/lib/database.types';
+import { ObjectId } from 'mongodb';
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -13,12 +14,22 @@ export async function POST(request: NextRequest) {
     try {
         const { db } = await connectToDatabase();
         const { searchParams } = new URL(request.url);
-        const project = searchParams.get('project');
+        const projectId = searchParams.get('projectId');
 
-        if (!project) {
-            return NextResponse.json({ error: 'Project name is required.' }, { status: 400 });
+        if (!projectId) {
+            return NextResponse.json({ error: 'Project ID is required.' }, { status: 400 });
         }
         
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+        if (!project) {
+            return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+        }
+
+        const teamMember = project.team.find((member: any) => member.userId.toString() === session.user.id);
+        if (!teamMember || teamMember.role !== 'owner') { // Changed to 'owner' only
+            return NextResponse.json({ error: 'Only the project owner can upload tasks to this project' }, { status: 403 });
+        }
+
         const tasks: Partial<Task>[] = await request.json(); // Get JSON directly from body
 
         if (!Array.isArray(tasks)) {
@@ -57,7 +68,7 @@ export async function POST(request: NextRequest) {
         }
 
         const lastTask = await db.collection('tasks').findOne(
-            { project, userId: session.user.id },
+            { projectId, userId: session.user.id },
             { sort: { order_index: -1 } }
         );
         const highestOrderIndex = lastTask?.order_index || 0;
@@ -73,7 +84,7 @@ export async function POST(request: NextRequest) {
                 end,
                 _id: undefined, // Ensure MongoDB generates a new _id
                 userId: session.user.id,
-                project: project,
+                projectId: projectId,
                 order_index: highestOrderIndex + index + 1,
             }
         });

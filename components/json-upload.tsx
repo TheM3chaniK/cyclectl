@@ -6,20 +6,20 @@ import { JsonUploadModal } from './json-upload-modal'; // New import
 
 interface JsonUploadProps {
   onUploadSuccess: () => void;
-  projectName: string;
+  projectId: string | undefined;
 }
 
-export function JsonUpload({ onUploadSuccess, projectName }: JsonUploadProps) {
+export function JsonUpload({ onUploadSuccess, projectId }: JsonUploadProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
-      <Button onClick={() => setIsModalOpen(true)}>Load JSON</Button>
+      <Button onClick={() => setIsModalOpen(true)} disabled={!projectId}>Load JSON</Button>
       <JsonUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUploadSuccess={onUploadSuccess}
-        projectName={projectName}
+        projectId={projectId}
       />
     </>
   );
