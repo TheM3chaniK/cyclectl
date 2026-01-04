@@ -6,26 +6,24 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Redirect authenticated users from /landing to /projects
-    if (token && pathname === "/landing") {
+    // If authenticated, redirect from root to /projects
+    if (token && pathname === "/") {
       return NextResponse.redirect(new URL("/projects", req.url));
     }
 
-    // Redirect unauthenticated users from / to /landing
-    // This catches access to /, /projects, /project/*, etc.
-    if (!token && (pathname === "/" || pathname.startsWith("/projects") || pathname.startsWith("/project"))) {
-      return NextResponse.redirect(new URL("/landing", req.url));
+    // Redirect unauthenticated users from /projects/* or /project/* to root
+    if (!token && (pathname.startsWith("/projects") || pathname.startsWith("/project"))) {
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
-    // Allow access to /landing and API routes for unauthenticated users
-    // NextAuth.js will handle its own /api/auth routes
+    // Allow access to root and API routes for unauthenticated users
     return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to public paths like /landing, /, and /api/auth/* without a token
-        if (req.nextUrl.pathname === "/landing" || req.nextUrl.pathname === "/" || req.nextUrl.pathname.startsWith("/api/auth")) {
+        // Allow access to public paths like /, and /api/auth/* without a token
+        if (req.nextUrl.pathname === "/" || req.nextUrl.pathname.startsWith("/api/auth")) {
           return true;
         }
         // For other paths, require a token
@@ -37,5 +35,5 @@ export default withAuth(
 
 // Matcher to apply middleware to specific paths
 export const config = {
-  matcher: ["/", "/projects/:path*", "/project/:path*", "/landing", "/api/auth/:path*"],
+  matcher: ["/", "/projects/:path*", "/project/:path*", "/api/auth/:path*"],
 };
